@@ -37,8 +37,11 @@ document.addEventListener('DOMContentLoaded', () => {
 	}
 
 	function animateTyping(element, speed) {
+		if (element.hasAttribute('data-animating')) return
+
 		const text = element.textContent
 		element.textContent = ''
+		element.setAttribute('data-animating', 'true')
 
 		let i = 0
 		function type() {
@@ -46,6 +49,8 @@ document.addEventListener('DOMContentLoaded', () => {
 				element.textContent += text.charAt(i)
 				i++
 				setTimeout(type, speed)
+			} else {
+				element.removeAttribute('data-animating')
 			}
 		}
 		type()
@@ -127,4 +132,65 @@ document.addEventListener('DOMContentLoaded', () => {
 	}
 
 	setClock('.timer', deadLine)
+
+	// Modal
+	const modal = document.querySelector('.modal'),
+		modalContent = modal.querySelector('.modal__content'),
+		openModal = document.querySelectorAll('[data-modal]'),
+		closeModal = document.querySelector('[data-close]')
+
+	function openModalWindow() {
+		modalContent.classList.add('animate__animated', 'animate__bounceIn')
+		modal.classList.toggle('show')
+		document.body.style.overflow = 'hidden'
+		clearInterval(modalTimerId)
+	}
+
+	openModal.forEach(item => {
+		item.addEventListener('click', event => {
+			event.preventDefault()
+			openModalWindow()
+		})
+	})
+
+	function closeModelWindow() {
+		modalContent.classList.remove('animate__animated', 'animate__bounceIn')
+		modal.classList.toggle('show')
+		document.body.style.overflow = ''
+	}
+
+	closeModal.addEventListener('click', event => {
+		event.preventDefault()
+		closeModelWindow()
+	})
+
+	modal.addEventListener('click', event => {
+		event.preventDefault()
+
+		if (event.target == modal) {
+			closeModelWindow()
+		}
+	})
+
+	document.addEventListener('keydown', event => {
+		event.preventDefault()
+
+		if (event.code === 'Escape' && modal.matches('.show')) {
+			closeModelWindow()
+		}
+	})
+
+	const modalTimerId = setTimeout(openModalWindow, 5000)
+
+	function showModalByScroll() {
+		if (
+			window.scrollY + document.documentElement.clientHeight >=
+			document.documentElement.scrollHeight
+		) {
+			openModalWindow()
+			window.removeEventListener('scroll', showModalByScroll)
+		}
+	}
+
+	window.addEventListener('scroll', showModalByScroll)
 })
