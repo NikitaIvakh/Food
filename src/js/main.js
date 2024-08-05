@@ -28,6 +28,26 @@ document.addEventListener('DOMContentLoaded', () => {
 			'animate__bounceIn'
 		)
 		tabs[i].classList.add('tabheader__item_active')
+
+		const textElements = tabsContent[i].querySelectorAll('.tabcontent__descr')
+		textElements.forEach(element => {
+			animateTyping(element, 20)
+		})
+	}
+
+	function animateTyping(element, speed) {
+		const text = element.textContent
+		element.textContent = ''
+
+		let i = 0
+		function type() {
+			if (i < text.length) {
+				element.textContent += text.charAt(i)
+				i++
+				setTimeout(type, speed)
+			}
+		}
+		type()
 	}
 
 	hideAllTabs()
