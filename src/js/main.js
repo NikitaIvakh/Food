@@ -60,7 +60,6 @@ document.addEventListener('DOMContentLoaded', () => {
 	showActiveTab()
 
 	tabsParent.addEventListener('click', event => {
-		event.preventDefault()
 		const target = event.target
 
 		if (target && target.matches('.tabheader__item')) {
@@ -139,6 +138,10 @@ document.addEventListener('DOMContentLoaded', () => {
 		openModal = document.querySelectorAll('[data-modal]'),
 		closeModal = document.querySelector('[data-close]')
 
+	openModal.forEach(item => {
+		item.addEventListener('click', openModalWindow)
+	})
+
 	function openModalWindow() {
 		modalContent.classList.add('animate__animated', 'animate__bounceIn')
 		modal.classList.toggle('show')
@@ -146,12 +149,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		clearInterval(modalTimerId)
 	}
 
-	openModal.forEach(item => {
-		item.addEventListener('click', event => {
-			event.preventDefault()
-			openModalWindow()
-		})
-	})
+	closeModal.addEventListener('click', closeModelWindow)
 
 	function closeModelWindow() {
 		modalContent.classList.remove('animate__animated', 'animate__bounceIn')
@@ -159,28 +157,19 @@ document.addEventListener('DOMContentLoaded', () => {
 		document.body.style.overflow = ''
 	}
 
-	closeModal.addEventListener('click', event => {
-		event.preventDefault()
-		closeModelWindow()
-	})
-
 	modal.addEventListener('click', event => {
-		event.preventDefault()
-
-		if (event.target == modal) {
+		if (event.target === modal) {
 			closeModelWindow()
 		}
 	})
 
 	document.addEventListener('keydown', event => {
-		event.preventDefault()
-
 		if (event.code === 'Escape' && modal.matches('.show')) {
 			closeModelWindow()
 		}
 	})
 
-	const modalTimerId = setTimeout(openModalWindow, 15000)
+	const modalTimerId = setTimeout(openModalWindow, 300000)
 
 	function showModalByScroll() {
 		if (
@@ -269,4 +258,59 @@ document.addEventListener('DOMContentLoaded', () => {
 		'.menu .container',
 		'menu__item'
 	).render()
+
+	// Send form
+
+	const forms = document.querySelectorAll('form')
+	const message = {
+		loading: 'Загрузка...',
+		success: 'Спасибо! Скоро мы с вами свяжемся',
+		failure: 'Что-то пошло не так...',
+	}
+
+	forms.forEach(item => {
+		postData(item)
+	})
+
+	function postData(form) {
+		form.addEventListener('submit', function (event) {
+			event.preventDefault()
+
+			const statusMessage = document.createElement('div')
+			statusMessage.classList.add('status')
+			statusMessage.textContent = message.loading
+			form.append(statusMessage)
+
+			const request = new XMLHttpRequest()
+			request.open('POST', 'server/server.php')
+			// request.setRequestHeader('Content-type', 'multipart/form-data')
+			request.setRequestHeader(
+				'Content-type',
+				'application/json; charset=uth-8'
+			)
+			const formData = new FormData(form)
+			const object = {}
+
+			formData.forEach(function (value, key) {
+				object[key] = value
+			})
+
+			const json = JSON.stringify(object)
+			request.send(json)
+
+			request.addEventListener('load', () => {
+				if (request.status === 200) {
+					console.log(request.response)
+					statusMessage.textContent = message.success
+					form.reset()
+					setTimeout(() => {
+						statusMessage.remove()
+					}, 7000)
+				} else {
+					console.log('Что-то пошло не так')
+					statusMessage.textContent = message.failure
+				}
+			})
+		})
+	}
 })
