@@ -283,30 +283,30 @@ document.addEventListener('DOMContentLoaded', () => {
 			statusMessage.classList.add('loading-elem')
 			form.insertAdjacentElement('afterend', statusMessage)
 
-			const request = new XMLHttpRequest()
-			request.open('POST', 'server/server.php')
-			request.setRequestHeader(
-				'Content-type',
-				'application/json; charset=uth-8'
-			)
-
 			const formData = new FormData(form)
 			const object = {}
-			formData.forEach(function (value, key) {
+
+			formData.forEach((value, key) => {
 				object[key] = value
 			})
 
-			const json = JSON.stringify(object)
-			request.send(json)
-
-			request.addEventListener('load', () => {
-				if (request.status === 200) {
-					console.log(request.response)
-					showThanksModal(message.success)
-					form.reset()
-					statusMessage.remove()
-				} else showThanksModal(message.failure)
+			fetch('server/server.php', {
+				method: 'POST',
+				body: JSON.stringify(object),
+				headers: {
+					'Content-type': 'application/json; charset=utf-8',
+				},
 			})
+				.then(data => data.text())
+				.then(data => {
+					console.log(data)
+					showThanksModal(message.success)
+					statusMessage.remove()
+				})
+				.catch(() => showThanksModal(message.failure))
+				.finally(() => {
+					form.reset()
+				})
 		})
 	}
 
