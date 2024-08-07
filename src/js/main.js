@@ -135,8 +135,7 @@ document.addEventListener('DOMContentLoaded', () => {
 	// Modal
 	const modal = document.querySelector('.modal'),
 		modalContent = modal.querySelector('.modal__content'),
-		openModal = document.querySelectorAll('[data-modal]'),
-		closeModal = document.querySelector('[data-close]')
+		openModal = document.querySelectorAll('[data-modal]')
 
 	openModal.forEach(item => {
 		item.addEventListener('click', openModalWindow)
@@ -144,21 +143,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
 	function openModalWindow() {
 		modalContent.classList.add('animate__animated', 'animate__bounceIn')
-		modal.classList.toggle('show')
+		modal.classList.add('show')
+		modal.classList.remove('hide')
 		document.body.style.overflow = 'hidden'
 		clearInterval(modalTimerId)
 	}
 
-	closeModal.addEventListener('click', closeModelWindow)
-
 	function closeModelWindow() {
 		modalContent.classList.remove('animate__animated', 'animate__bounceIn')
-		modal.classList.toggle('show')
+		modal.classList.add('hide')
+		modal.classList.remove('show')
 		document.body.style.overflow = ''
 	}
 
 	modal.addEventListener('click', event => {
-		if (event.target === modal) {
+		if (
+			event.target === modal ||
+			event.target.getAttribute('data-close') == ''
+		) {
 			closeModelWindow()
 		}
 	})
@@ -169,7 +171,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		}
 	})
 
-	const modalTimerId = setTimeout(openModalWindow, 300000)
+	const modalTimerId = setTimeout(openModalWindow, 50000)
 
 	function showModalByScroll() {
 		if (
@@ -263,7 +265,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 	const forms = document.querySelectorAll('form')
 	const message = {
-		loading: 'Загрузка...',
+		loading: 'img/form/spinner.svg',
 		success: 'Спасибо! Скоро мы с вами свяжемся',
 		failure: 'Что-то пошло не так...',
 	}
@@ -276,21 +278,20 @@ document.addEventListener('DOMContentLoaded', () => {
 		form.addEventListener('submit', function (event) {
 			event.preventDefault()
 
-			const statusMessage = document.createElement('div')
-			statusMessage.classList.add('status')
-			statusMessage.textContent = message.loading
-			form.append(statusMessage)
+			const statusMessage = document.createElement('img')
+			statusMessage.src = message.loading
+			statusMessage.classList.add('loading-elem')
+			form.insertAdjacentElement('afterend', statusMessage)
 
 			const request = new XMLHttpRequest()
 			request.open('POST', 'server/server.php')
-			// request.setRequestHeader('Content-type', 'multipart/form-data')
 			request.setRequestHeader(
 				'Content-type',
 				'application/json; charset=uth-8'
 			)
+
 			const formData = new FormData(form)
 			const object = {}
-
 			formData.forEach(function (value, key) {
 				object[key] = value
 			})
@@ -301,16 +302,37 @@ document.addEventListener('DOMContentLoaded', () => {
 			request.addEventListener('load', () => {
 				if (request.status === 200) {
 					console.log(request.response)
-					statusMessage.textContent = message.success
+					showThanksModal(message.success)
 					form.reset()
-					setTimeout(() => {
-						statusMessage.remove()
-					}, 7000)
-				} else {
-					console.log('Что-то пошло не так')
-					statusMessage.textContent = message.failure
-				}
+					statusMessage.remove()
+				} else showThanksModal(message.failure)
 			})
 		})
+	}
+
+	function showThanksModal(message) {
+		const prevModalDialog = document.querySelector('.modal__dialog')
+
+		prevModalDialog.classList.add('hide')
+		openModalWindow()
+
+		const thanksModal = document.createElement('div')
+		thanksModal.classList.add('modal__dialog')
+		thanksModal.innerHTML = `
+			<div class="modal__content">
+				<div class="modal__close" data-close>&times;</div>
+				<div class="modal__title">
+					${message}
+				</div>
+			</div>
+		`
+
+		document.querySelector('.modal').append(thanksModal)
+		setTimeout(() => {
+			thanksModal.remove()
+			prevModalDialog.classList.add('show')
+			prevModalDialog.classList.remove('hide')
+			closeModelWindow()
+		}, 4000)
 	}
 })
