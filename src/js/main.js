@@ -329,45 +329,61 @@ document.addEventListener('DOMContentLoaded', () => {
 		}, 4000)
 	}
 
-	// Slider (Variant 1)
+	// Slider (Variant 2)
 	const slides = document.querySelectorAll('.offer__slide'),
-		slideCounterCur = document.querySelector('#current'),
-		slideCounterTotal = document.querySelector('#total'),
+		previous = document.querySelector('.offer__slider-prev'),
 		next = document.querySelector('.offer__slider-next'),
-		previous = document.querySelector('.offer__slider-prev')
+		slideCounterTotal = document.querySelector('#total'),
+		slideCounterCur = document.querySelector('#current'),
+		slidesWrapper = document.querySelector('.offer__slider-wrapper'),
+		slidesField = document.querySelector('.offer__slider-inner'),
+		width = window.getComputedStyle(slidesWrapper).width
 
-	let currentIndex = 0
+	let slideIndex = 1
+	let offset = 0
 
-	function hideAllSliders() {
-		slides.forEach(item => {
-			item.classList.remove('active')
-			item.classList.add('hide')
-		})
+	if (slides.length < 10) {
+		slideCounterTotal.textContent = `0${slides.length}`
+		slideCounterCur.textContent = `0${slideIndex}`
+	} else {
+		slideCounterTotal.textContent = slides.length
+		slideCounterCur.textContent = `0${slideIndex}`
 	}
 
-	function showActiveSlide(i = 0) {
-		hideAllSliders()
-		slides[i].classList.add('active')
-		slides[i].classList.remove('hide')
+	slidesField.style.width = 100 * slides.length + '%'
+	slidesField.style.display = 'flex'
+	slidesField.style.transition = '0.6s all'
+	slidesWrapper.style.overflow = 'hidden'
 
-		slideCounterCur.textContent = addZero(i + 1)
-		slideCounterTotal.textContent = addZero(slides.length)
-	}
-
-	function addZero(data) {
-		return data < 10 && data >= 0 ? `0${data}` : data
-	}
-
-	hideAllSliders()
-	showActiveSlide()
+	slides.forEach(slide => {
+		slide.style.width = width
+	})
 
 	next.addEventListener('click', function () {
-		currentIndex = (currentIndex + 1) % slides.length
-		showActiveSlide(currentIndex)
+		if (offset == +width.slice(0, width.length - 2) * (slides.length - 1)) {
+			offset = 0
+		} else offset += +width.slice(0, width.length - 2)
+
+		slidesField.style.transform = `translateX(-${offset}px)`
+
+		if (slideIndex == slides.length) slideIndex = 1
+		else slideIndex++
+
+		if (slides.length < 10) slideCounterCur.textContent = `0${slideIndex}`
+		else slideCounterCur.textContent = slideIndex
 	})
 
 	previous.addEventListener('click', function () {
-		currentIndex = (currentIndex - 1 + slides.length) % slides.length
-		showActiveSlide(currentIndex)
+		if (offset == 0)
+			offset = +width.slice(0, width.length - 2) * (slides.length - 1)
+		else offset -= +width.slice(0, width.length - 2)
+
+		slidesField.style.transform = `translateX(-${offset}px)`
+
+		if (slideIndex == 1) slideIndex = slides.length
+		else slideIndex--
+
+		if (slides.length < 10) slideCounterCur.textContent = `0${slideIndex}`
+		else slideCounterCur.textContent = `0${slideIndex}`
 	})
 })
