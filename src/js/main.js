@@ -335,4 +335,9 @@ document.addEventListener('DOMContentLoaded', () => {
 			closeModelWindow()
 		}, 4000)
 	}
+
+	fetch('http://localhost:3000/menu')
+		.then(response => response.json())
+		.then(data => console.log(data))
+		.catch(error => console.error('Error:', error))
 })

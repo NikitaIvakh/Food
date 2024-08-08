@@ -1,92 +1,154 @@
 const gulp = require('gulp')
-const browserSync = require('browser-sync')
+const browsersync = require('browser-sync')
 const sass = require('gulp-sass')(require('sass'))
+const webpack = require('webpack-stream')
+const autoprefixer = require('autoprefixer')
 const cleanCSS = require('gulp-clean-css')
-const autoprefixer = require('gulp-autoprefixer')
-const rename = require('gulp-rename')
-const htmlmin = require('gulp-htmlmin')
-const uglify = require('gulp-uglify')
+const postcss = require('gulp-postcss')
 
-gulp.task('server', function () {
-	browserSync({
-		server: {
-			baseDir: 'dist',
-		},
+const dist = './dist'
+
+gulp.task('copy-html', () => {
+	return gulp
+		.src('./src/index.html')
+		.pipe(gulp.dest(dist))
+		.pipe(browsersync.stream())
+})
+
+gulp.task('copy-server', () => {
+	return gulp.src('./src/server/server.php').pipe(gulp.dest(dist + '/server'))
+})
+
+gulp.task('build-js', () => {
+	return gulp
+		.src('./src/js/main.js')
+		.pipe(
+			webpack({
+				mode: 'development',
+				output: {
+					filename: 'script.js',
+				},
+				watch: false,
+				devtool: 'source-map',
+				module: {
+					rules: [
+						{
+							test: /\.m?js$/,
+							exclude: /(node_modules|bower_components)/,
+							use: {
+								loader: 'babel-loader',
+								options: {
+									presets: [
+										[
+											'@babel/preset-env',
+											{
+												debug: true,
+												corejs: 3,
+												useBuiltIns: 'usage',
+											},
+										],
+									],
+								},
+							},
+						},
+					],
+				},
+			})
+		)
+		.pipe(gulp.dest(dist + '/js'))
+		.pipe(browsersync.stream())
+})
+
+gulp.task('build-sass', () => {
+	return gulp
+		.src('./src/scss/**/*.scss')
+		.pipe(sass().on('error', sass.logError))
+		.pipe(gulp.dest(dist + '/css'))
+		.pipe(browsersync.stream())
+})
+
+gulp.task('copy-assets', () => {
+	gulp.src('./src/icons/**/*.*').pipe(gulp.dest(dist + '/icons'))
+
+	return gulp
+		.src('./src/img/**/*.*')
+		.pipe(gulp.dest(dist + '/img'))
+		.pipe(browsersync.stream())
+})
+
+gulp.task('watch', () => {
+	browsersync.init({
+		server: './dist/',
+		port: 4000,
+		notify: true,
 	})
 
-	gulp.watch('src/*.html').on('change', browserSync.reload)
-})
-
-gulp.task('styles', function () {
-	return gulp
-		.src('src/scss/**/*.+(scss|sass)')
-		.pipe(sass({ outputStyle: 'compressed' }).on('error', sass.logError))
-		.pipe(rename({ suffix: '.min', prefix: '' }))
-		.pipe(autoprefixer())
-		.pipe(cleanCSS({ compatibility: 'ie8' }))
-		.pipe(gulp.dest('dist/css'))
-		.pipe(browserSync.stream())
-})
-
-gulp.task('watch', function () {
-	gulp.watch('src/scss/**/*.+(scss|sass|css)', gulp.parallel('styles'))
-	gulp.watch('src/*.html').on('change', gulp.parallel('html'))
-	gulp.watch('src/server/*.php').on('change', gulp.parallel('servers'))
-	gulp.watch('src/js/**/*.js').on('change', gulp.parallel('scripts'))
-	// gulp.watch('src/fonts/**/*').on('all', gulp.parallel('fonts'))
-	gulp.watch('src/icons/**/*').on('all', gulp.parallel('icons'))
-	gulp.watch('src/img/**/*').on('all', gulp.parallel('images'))
-})
-
-gulp.task('html', function () {
-	return gulp
-		.src('src/*.html')
-		.pipe(htmlmin({ collapseWhitespace: true }))
-		.pipe(gulp.dest('dist/'))
-})
-
-gulp.task('servers', function () {
-	return gulp.src('src/server/*.php').pipe(gulp.dest('dist/server'))
-})
-
-gulp.task('scripts', function () {
-	return gulp
-		.src('src/js/**/*.js')
-		.pipe(gulp.dest('dist/js'))
-		.pipe(browserSync.stream())
-})
-
-// gulp.task('fonts', function () {
-// 	return gulp
-// 		.src('src/fonts/**/*')
-// 		.pipe(gulp.dest('dist/fonts'))
-// 		.pipe(browserSync.stream())
-// })
-
-gulp.task('icons', function () {
-	return gulp
-		.src('src/icons/**/*')
-		.pipe(gulp.dest('dist/icons'))
-		.pipe(browserSync.stream())
-})
-
-gulp.task('images', function () {
-	return gulp
-		.src('src/img/**/*')
-		.pipe(gulp.dest('dist/img'))
-		.pipe(browserSync.stream())
+	gulp.watch('./src/index.html', gulp.parallel('copy-html'))
+	gulp.watch('./src/icons/**/*.*', gulp.parallel('copy-assets'))
+	gulp.watch('./src/img/**/*.*', gulp.parallel('copy-assets'))
+	gulp.watch('./src/server/server.php', gulp.parallel('copy-server'))
+	gulp.watch('./src/scss/**/*.scss', gulp.parallel('build-sass'))
+	gulp.watch('./src/js/**/*.js', gulp.parallel('build-js'))
 })
 
 gulp.task(
-	'default',
+	'build',
 	gulp.parallel(
-		'watch',
-		'server',
-		'styles',
-		'scripts',
-		'icons',
-		'html',
-		'servers',
-		'images'
+		'copy-html',
+		'copy-server',
+		'copy-assets',
+		'build-sass',
+		'build-js'
 	)
 )
+
+gulp.task('prod', () => {
+	gulp.src('./src/index.html').pipe(gulp.dest(dist))
+	gulp.src('./src/img/**/*.*').pipe(gulp.dest(dist + '/img'))
+	gulp.src('./src/icons/**/*.*').pipe(gulp.dest(dist + '/icons'))
+	gulp.src('./src/db.json').pipe(gulp.dest(dist + '/db'))
+
+	gulp
+		.src('./src/js/main.js')
+		.pipe(
+			webpack({
+				mode: 'production',
+				output: {
+					filename: 'script.js',
+				},
+				module: {
+					rules: [
+						{
+							test: /\.m?js$/,
+							exclude: /(node_modules|bower_components)/,
+							use: {
+								loader: 'babel-loader',
+								options: {
+									presets: [
+										[
+											'@babel/preset-env',
+											{
+												debug: false,
+												corejs: 3,
+												useBuiltIns: 'usage',
+											},
+										],
+									],
+								},
+							},
+						},
+					],
+				},
+			})
+		)
+		.pipe(gulp.dest(dist + '/js'))
+
+	return gulp
+		.src('./src/scss/style.scss')
+		.pipe(sass().on('error', sass.logError))
+		.pipe(postcss([autoprefixer()]))
+		.pipe(cleanCSS())
+		.pipe(gulp.dest(dist + '/css'))
+})
+
+gulp.task('default', gulp.parallel('watch', 'build'))
