@@ -20,7 +20,8 @@
 		grid-template-rows: 500px;
 		grid-auto-rows: 1fr;
 		justify-content: space-between;
-		gap: 55px;
+		column-gap: 120px;
+		row-gap: 50px;
 	}
 	&__item {
 		width: 320px;
