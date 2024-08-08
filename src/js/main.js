@@ -347,12 +347,12 @@ document.addEventListener('DOMContentLoaded', () => {
 		slideCounterCur.textContent = `0${slideIndex}`
 	} else {
 		slideCounterTotal.textContent = slides.length
-		slideCounterCur.textContent = `0${slideIndex}`
+		slideCounterCur.textContent = slideIndex
 	}
 
 	slidesField.style.width = 100 * slides.length + '%'
 	slidesField.style.display = 'flex'
-	slidesField.style.transition = '0.6s all'
+	slidesField.style.transition = '0.5s all'
 	slidesWrapper.style.overflow = 'hidden'
 
 	slides.forEach(slide => {
@@ -384,6 +384,6 @@ document.addEventListener('DOMContentLoaded', () => {
 		else slideIndex--
 
 		if (slides.length < 10) slideCounterCur.textContent = `0${slideIndex}`
-		else slideCounterCur.textContent = `0${slideIndex}`
+		else slideCounterCur.textContent = slideIndex
 	})
 })
