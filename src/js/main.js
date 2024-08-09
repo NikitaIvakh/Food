@@ -331,6 +331,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 	// Slider (Variant 2)
 	const slides = document.querySelectorAll('.offer__slide'),
+		slider = document.querySelector('.offer__slider'),
 		previous = document.querySelector('.offer__slider-prev'),
 		next = document.querySelector('.offer__slider-next'),
 		slideCounterTotal = document.querySelector('#total'),
@@ -359,6 +360,34 @@ document.addEventListener('DOMContentLoaded', () => {
 		slide.style.width = width
 	})
 
+	slider.style.position = 'relative'
+
+	const indicators = document.createElement('ol'),
+		dots = []
+	indicators.classList.add('carousel-indicators')
+	slider.append(indicators)
+
+	for (let i = 0; i < slides.length; i++) {
+		const dot = document.createElement('li')
+		dot.setAttribute('data-slide-to', i + 1)
+		dot.classList.add('dot')
+
+		if (i == 0) {
+			dot.classList.add('active-dot')
+		}
+
+		indicators.append(dot)
+		dots.push(dot)
+	}
+
+	function slideParameters() {
+		if (slides.length < 10) slideCounterCur.textContent = `0${slideIndex}`
+		else slideCounterCur.textContent = slideIndex
+
+		dots.forEach(dot => (dot.style.opacity = '.5'))
+		dots[slideIndex - 1].style.opacity = '1'
+	}
+
 	next.addEventListener('click', function () {
 		if (offset == +width.slice(0, width.length - 2) * (slides.length - 1)) {
 			offset = 0
@@ -369,8 +398,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		if (slideIndex == slides.length) slideIndex = 1
 		else slideIndex++
 
-		if (slides.length < 10) slideCounterCur.textContent = `0${slideIndex}`
-		else slideCounterCur.textContent = slideIndex
+		slideParameters()
 	})
 
 	previous.addEventListener('click', function () {
@@ -383,7 +411,18 @@ document.addEventListener('DOMContentLoaded', () => {
 		if (slideIndex == 1) slideIndex = slides.length
 		else slideIndex--
 
-		if (slides.length < 10) slideCounterCur.textContent = `0${slideIndex}`
-		else slideCounterCur.textContent = slideIndex
+		slideParameters()
+	})
+
+	dots.forEach(dot => {
+		dot.addEventListener('click', function (event) {
+			const slideTo = event.target.getAttribute('data-slide-to')
+
+			slideIndex = slideTo
+			offset = +width.slice(0, width.length - 2) * (slideTo - 1)
+			slidesField.style.transform = `translateX(-${offset}px)`
+
+			slideParameters()
+		})
 	})
 })
