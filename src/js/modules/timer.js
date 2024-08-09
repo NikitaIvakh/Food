@@ -1,8 +1,6 @@
 'use strict'
 
-function timer() {
-	const deadLine = '2024-08-25'
-
+function timer(id, deadLine) {
 	function getTimeRemaining(endTime) {
 		let days, hours, minutes, seconds
 		const t = Date.parse(endTime) - Date.parse(new Date())
@@ -58,7 +56,7 @@ function timer() {
 		}
 	}
 
-	setClock('.timer', deadLine)
+	setClock(id, deadLine)
 }
 
-module.exports = timer
+export default timer

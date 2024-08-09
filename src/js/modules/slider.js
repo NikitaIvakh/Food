@@ -1,14 +1,23 @@
 'use strict'
 
-function slider() {
-	const slides = document.querySelectorAll('.offer__slide'),
-		slider = document.querySelector('.offer__slider'),
-		previous = document.querySelector('.offer__slider-prev'),
-		next = document.querySelector('.offer__slider-next'),
-		slideCounterTotal = document.querySelector('#total'),
-		slideCounterCur = document.querySelector('#current'),
-		slidesWrapper = document.querySelector('.offer__slider-wrapper'),
-		slidesField = document.querySelector('.offer__slider-inner'),
+function slider({
+	container,
+	slide,
+	nextArrow,
+	prevArrow,
+	totalCounter,
+	currentCounter,
+	wrapper,
+	field,
+}) {
+	const slides = document.querySelectorAll(slide),
+		slider = document.querySelector(container),
+		previous = document.querySelector(prevArrow),
+		next = document.querySelector(nextArrow),
+		slideCounterTotal = document.querySelector(totalCounter),
+		slideCounterCur = document.querySelector(currentCounter),
+		slidesWrapper = document.querySelector(wrapper),
+		slidesField = document.querySelector(field),
 		width = window.getComputedStyle(slidesWrapper).width
 
 	let slideIndex = 1
@@ -101,4 +110,4 @@ function slider() {
 	})
 }
 
-module.exports = slider
+export default slider
