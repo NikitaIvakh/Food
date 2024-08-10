@@ -28,7 +28,7 @@ gulp.task('build-js', () => {
 				output: {
 					filename: 'script.js',
 				},
-				watch: false,
+				watch: true,
 				devtool: 'source-map',
 				module: {
 					rules: [
@@ -104,9 +104,9 @@ gulp.task(
 
 gulp.task('prod', () => {
 	gulp.src('./src/index.html').pipe(gulp.dest(dist))
-	gulp.src('./src/img/**/*.*').pipe(gulp.dest(dist + '/img'))
 	gulp.src('./src/icons/**/*.*').pipe(gulp.dest(dist + '/icons'))
-	gulp.src('./src/db.json').pipe(gulp.dest(dist + '/db'))
+	gulp.src('./src/img/**/*.*').pipe(gulp.dest(dist + '/img'))
+	gulp.src('./db.json').pipe(gulp.dest(dist + '/db'))
 
 	gulp
 		.src('./src/js/main.js')
@@ -114,8 +114,10 @@ gulp.task('prod', () => {
 			webpack({
 				mode: 'production',
 				output: {
-					filename: 'script.js',
+					filename: 'bundle.js',
 				},
+				watch: true,
+				devtool: 'source-map',
 				module: {
 					rules: [
 						{
@@ -128,7 +130,7 @@ gulp.task('prod', () => {
 										[
 											'@babel/preset-env',
 											{
-												debug: false,
+												debug: true,
 												corejs: 3,
 												useBuiltIns: 'usage',
 											},
@@ -151,4 +153,4 @@ gulp.task('prod', () => {
 		.pipe(gulp.dest(dist + '/css'))
 })
 
-gulp.task('default', gulp.parallel('watch', 'build'))
+gulp.task('default', gulp.parallel('watch', 'prod'))
